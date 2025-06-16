@@ -845,6 +845,7 @@ class System:
         atom_pert_distance: float,
         atom_pert_style: str = "normal",
         atom_pert_prob: float = 1.0,
+        elem_pert_list: list = None,
     ):
         """Perturb each frame in the system randomly.
         The cell will be deformed randomly, and atoms will be displaced by a random distance in random direction.
@@ -875,6 +876,8 @@ class System:
                 - `'const'`: The distance atoms move will be a constant `atom_pert_distance`.
         atom_pert_prob : float
             Determine the proportion of the total number of atoms in a frame that are perturbed.
+        elem_pert_list: list
+            Determine to perturb the atoms corresponding to the specified element.
 
         Returns
         -------
@@ -898,10 +901,15 @@ class System:
                 tmp_system.data["coords"][0] = np.matmul(
                     tmp_system.data["coords"][0], cell_perturb_matrix
                 )
-                pert_natoms = int(atom_pert_prob * len(tmp_system.data["coords"][0]))
+                if elem_pert_list is not None:
+                    elements = [tmp_system.data["atom_names"][types] for types in tmp_system.data["atom_types"]]
+                    pert_indices = [idx for idx, elem in enumerate(elements) if elem in elem_pert_list]
+                else:
+                    pert_indices = list(range(len(tmp_system.data["coords"][0])))
+                pert_natoms = int(atom_pert_prob * len(pert_indices)
                 pert_atom_id = sorted(
                     np.random.choice(
-                        range(len(tmp_system.data["coords"][0])),
+                        pert_indices,
                         pert_natoms,
                         replace=False,
                     ).tolist()
