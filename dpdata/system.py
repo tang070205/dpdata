@@ -902,10 +902,13 @@ class System:
                     tmp_system.data["coords"][0], cell_perturb_matrix
                 )
                 if elem_pert_list is not None:
-                    elements = [tmp_system.data["atom_names"][types] for types in tmp_system.data["atom_types"]]
-                    pert_indices = [idx for idx, elem in enumerate(elements) if elem in elem_pert_list]
-                else:
-                    pert_indices = list(range(len(tmp_system.data["coords"][0])))
+                    if all(isinstance(el, str) for el in elem_pert_list):
+                        elements = [tmp_system.data["atom_names"][types] for types in tmp_system.data["atom_types"]]
+                        perturb_indices = [idx for idx, el in enumerate(elements) if el in elem_pert_list]
+                    elif all(isinstance(el, int) for el in elem_pert_list):
+                        perturb_indices = elem_pert_list
+                    else:
+                        pert_indices = list(range(len(tmp_system.data["coords"][0])))
                 pert_natoms = int(atom_pert_prob * len(pert_indices)
                 pert_atom_id = sorted(
                     np.random.choice(
